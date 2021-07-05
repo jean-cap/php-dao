@@ -8,6 +8,46 @@ class Usuario
     private string $dessenha;
     private DateTime $dtcadastro;
 
+    public function __construct(string $login = '', string $senha = '')
+    {
+        $this->setDeslogin($login);
+        $this->setDessenha($senha);
+    }
+
+    public function setData($data)
+    {
+        $this->setIdusuario($data['idusuario']);
+        $this->setDeslogin($data['deslogin']);
+        $this->setDessenha($data['dessenha']);
+        $this->setDtcadastro(new DateTime($data['dtcadastro']));
+    }
+
+    public function insert()
+    {
+        $sql = new Sql();
+        $resultado = $sql->select('CALL sp_usuarios_insert(:LOGIN, :PASSWORD)', array(
+            ':LOGIN' => $this->getDeslogin(),
+            ':PASSWORD' => $this->getDessenha()
+        ));
+
+        if (isset($resultado[0])) {
+            $this->setData($resultado[0]);
+        }
+    }
+
+    public function update($login, $senha)
+    {
+        $this->setDeslogin($login);
+        $this->setDessenha($senha);
+
+        $sql = new Sql();
+        $sql->query('UPDATE tb_usuarios SET deslogin = :LOGIN, dessenha = :SENHA WHERE idusuario = :ID', array(
+            ':LOGIN' => $this->getDeslogin(),
+            ':SENHA' => $this->getDessenha(),
+            ':ID' => $this->getIdusuario()
+        ));
+    }
+
     public static function getList()
     {
         $sql = new Sql();
@@ -26,12 +66,7 @@ class Usuario
         $resultado = $sql->select('SELECT * FROM tb_usuarios WHERE idusuario = :ID', array(':ID' => $id));
 
         if (isset($resultado[0])) {
-            $row = $resultado[0];
-
-            $this->setIdusuario($row['idusuario']);
-            $this->setDeslogin($row['deslogin']);
-            $this->setDessenha($row['dessenha']);
-            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+            $this->setData($resultado[0]);
         }
     }
 
@@ -44,12 +79,7 @@ class Usuario
         ));
 
         if (isset($resultado[0])) {
-            $row = $resultado[0];
-
-            $this->setIdusuario($row['idusuario']);
-            $this->setDeslogin($row['deslogin']);
-            $this->setDessenha($row['dessenha']);
-            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+            $this->setData($resultado[0]);
         } else {
             throw new Exception('Login ou senha inválidos!');
         }
