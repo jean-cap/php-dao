@@ -8,6 +8,18 @@ class Usuario
     private string $dessenha;
     private DateTime $dtcadastro;
 
+    public static function getList()
+    {
+        $sql = new Sql();
+        return $sql->select('SELECT * FROM tb_usuarios ORDER BY deslogin');
+    }
+
+    public static function search($login)
+    {
+        $sql = new Sql();
+        return $sql->select('SELECT * FROM tb_usuarios WHERE deslogin LIKE :LOGIN ORDER BY deslogin', array(':LOGIN' => '%' . $login . '%'));
+    }
+
     public function loadById(int $id): void
     {
         $sql = new Sql();
@@ -20,6 +32,26 @@ class Usuario
             $this->setDeslogin($row['deslogin']);
             $this->setDessenha($row['dessenha']);
             $this->setDtcadastro(new DateTime($row['dtcadastro']));
+        }
+    }
+
+    public function login($login, $password)
+    {
+        $sql = new Sql();
+        $resultado = $sql->select('SELECT * FROM tb_usuarios WHERE deslogin = :LOGIN AND dessenha = :PASSWORD', array(
+            ':LOGIN' => $login,
+            ':PASSWORD' => $password
+        ));
+
+        if (isset($resultado[0])) {
+            $row = $resultado[0];
+
+            $this->setIdusuario($row['idusuario']);
+            $this->setDeslogin($row['deslogin']);
+            $this->setDessenha($row['dessenha']);
+            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+        } else {
+            throw new Exception('Login ou senha inválidos!');
         }
     }
 
